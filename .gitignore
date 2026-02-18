@@ -1,0 +1,25 @@
+# Dependencies
+libtorch/
+build/
+__pycache__/
+*.pyc
+
+# Data files
+dataset.bin
+merged_dataset.bin
+*.bin
+
+# Training artifacts
+weights.pth
+model_script.pt
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+diagnose.py
+verify_models.py

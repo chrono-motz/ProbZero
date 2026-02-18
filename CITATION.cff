@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ProbZero: Reward-Bootstrapped AlphaZero with Full-Tree Policy Training"
+type: software
+authors:
+  - family-names: "REPLACE_WITH_YOUR_LAST_NAME"
+    given-names: "REPLACE_WITH_YOUR_FIRST_NAME"
+    orcid: "https://orcid.org/REPLACE_WITH_ORCID"
+date-released: "2025-02-19"
+url: "https://github.com/REPLACE_WITH_YOUR_USERNAME/ProbZero"
+repository-code: "https://github.com/REPLACE_WITH_YOUR_USERNAME/ProbZero"
+license: Apache-2.0
+keywords:
+  - alphazero
+  - reinforcement-learning
+  - othello
+  - mcts
+  - self-play
+  - reward-bootstrapping
+abstract: >-
+  ProbZero is an AlphaZero variant that introduces two key modifications:
+  (1) a reward-bootstrapped value head where terminal state rewards propagate
+  through the search tree to train the value function, enabling all explored
+  positions to serve as training data; and (2) a full-tree policy training
+  scheme where the policy network learns from WDL (Win/Draw/Loss) probabilities
+  over explored children only, weighted by visit counts. Demonstrated on 5×5
+  Othello with progressive Elo improvement across training iterations.
