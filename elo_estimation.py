@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 # =============================================
 BASE_DIR = "/kaggle/working/SmolEngine"
 PLAY_BINARY = os.path.join(BASE_DIR, "build", "play")
-MODEL_DIR = os.path.join(BASE_DIR, "checkpoints")
+MODEL_DIR = os.path.join(BASE_DIR, "5x5_othello_models")
 GAMES_PER_MATCHUP = 20     # Total games per matchup (half as each color)
 TEMPERATURE = 1.0           # Move selection temperature
 OUTPUT_DIR = "/kaggle/working"  # Where to save plots and results

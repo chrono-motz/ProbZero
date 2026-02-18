@@ -136,11 +136,11 @@ Training on 5×5 Othello shows clear Elo progression across iterations. See `elo
 If you use this work, please cite:
 
 ```bibtex
-@software{probzero2025,
+@software{probzero2026,
   title={ProbZero: Reward-Bootstrapped AlphaZero with Full-Tree Policy Training},
-  author={REPLACE_WITH_YOUR_NAME},
-  year={2025},
-  url={https://github.com/REPLACE_WITH_YOUR_USERNAME/ProbZero},
+  author={Mothish},
+  year={2026},
+  url={https://github.com/chrono-motz/ProbZero},
   license={Apache-2.0}
 }
 ```

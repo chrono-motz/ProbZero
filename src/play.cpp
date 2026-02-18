@@ -182,16 +182,17 @@ public:
                 if(move >= 0) {
                    m.game.apply_action(move);
                    ai->advance_root(move);
-                   opp->advance_root(move);
+                   // Opponent's tree never explored current player's moves,
+                   // so reinitialize from the updated game state
+                   opp->initialize(m.game);
                 } else {
                    // Pass?
                    if (!m.game.is_terminal()) {
-                        // Check if pass is legal (it should be if get_move returned -1 but not terminal?)
                         std::array<int, 26> legal; 
                         if (m.game.get_legal_actions(legal) > 0) {
                              m.game.apply_action(legal[0]);
                              ai->advance_root(legal[0]);
-                             opp->advance_root(legal[0]);
+                             opp->initialize(m.game);
                         }
                    }
                 }

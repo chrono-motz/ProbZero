@@ -3,12 +3,12 @@ message: "If you use this software, please cite it as below."
 title: "ProbZero: Reward-Bootstrapped AlphaZero with Full-Tree Policy Training"
 type: software
 authors:
-  - family-names: "REPLACE_WITH_YOUR_LAST_NAME"
-    given-names: "REPLACE_WITH_YOUR_FIRST_NAME"
-    orcid: "https://orcid.org/REPLACE_WITH_ORCID"
+  - family-names: "M"
+    given-names: "Mothish"
+    orcid: "https://orcid.org/0009-0007-5891-4840"
 date-released: "2025-02-19"
-url: "https://github.com/REPLACE_WITH_YOUR_USERNAME/ProbZero"
-repository-code: "https://github.com/REPLACE_WITH_YOUR_USERNAME/ProbZero"
+url: "https://github.com/chrono-motz/ProbZero"
+repository-code: "https://github.com/chrono-motz/ProbZero"
 license: Apache-2.0
 keywords:
   - alphazero
