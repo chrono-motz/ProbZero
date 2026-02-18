@@ -147,7 +147,7 @@ public:
             iter++;
             if(iter % 10 == 0) std::cout << "Processed turn " << iter << " | Completed: " << finished_count << "\n";
 
-            // 1. MCTS SEARCH PHASE
+             // 1. MCTS SEARCH PHASE
             int sim_step = 16;
             for(int s=0; s < sims; s += sim_step) { 
                 std::vector<Mcts*> batch_b;
@@ -155,9 +155,11 @@ public:
                 
                 for(auto& m : matches) {
                     if(m.finished) continue;
-                    int p = m.game.current_player();
-                    if(p == 0) batch_b.push_back(m.ai_b.get());
-                    else       batch_w.push_back(m.ai_w.get());
+                    // Both players run sims from the same position,
+                    // so both trees explore the legal moves and
+                    // advance_root works for both after a move is played
+                    batch_b.push_back(m.ai_b.get());
+                    batch_w.push_back(m.ai_w.get());
                 }
                 
                 // Prepare
@@ -177,14 +179,12 @@ public:
                 Mcts* ai = (p==0) ? m.ai_b.get() : m.ai_w.get();
                 Mcts* opp = (p==0) ? m.ai_w.get() : m.ai_b.get();
                 
-                int move = ai->get_move(false); // Stochastic — sample from search distribution
+                int move = ai->get_move(true); // Deterministic best move
                 // Apply move if valid
                 if(move >= 0) {
                    m.game.apply_action(move);
                    ai->advance_root(move);
-                   // Opponent's tree never explored current player's moves,
-                   // so reinitialize from the updated game state
-                   opp->initialize(m.game);
+                   opp->advance_root(move);
                 } else {
                    // Pass?
                    if (!m.game.is_terminal()) {
@@ -192,7 +192,7 @@ public:
                         if (m.game.get_legal_actions(legal) > 0) {
                              m.game.apply_action(legal[0]);
                              ai->advance_root(legal[0]);
-                             opp->initialize(m.game);
+                             opp->advance_root(legal[0]);
                         }
                    }
                 }
