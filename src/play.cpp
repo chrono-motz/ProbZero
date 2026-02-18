@@ -177,7 +177,7 @@ public:
                 Mcts* ai = (p==0) ? m.ai_b.get() : m.ai_w.get();
                 Mcts* opp = (p==0) ? m.ai_w.get() : m.ai_b.get();
                 
-                int move = ai->get_move(true); // Deterministic
+                int move = ai->get_move(false); // Stochastic — sample from search distribution
                 // Apply move if valid
                 if(move >= 0) {
                    m.game.apply_action(move);
