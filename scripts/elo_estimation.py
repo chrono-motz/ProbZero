@@ -4,18 +4,15 @@ ProbZero Elo Estimation Script (C++ Arena)
 Uses the pre-built C++ 'play' binary for GPU-accelerated MCTS arena matches.
 Computes Elo ratings and generates publication-ready plots.
 
-Kaggle Setup:
-  - Models at:  /kaggle/working/SmolEngine/checkpoints/
-  - Binary at:  /kaggle/working/SmolEngine/build/play
-  - GPU enabled
-
-Usage: python elo_estimation.py
+Usage (from repository root):
+    python scripts/elo_estimation.py
 """
 
 import subprocess
 import re
 import os
 import itertools
+import sys
 import numpy as np
 from collections import defaultdict
 import matplotlib
@@ -25,11 +22,20 @@ import matplotlib.pyplot as plt
 # =============================================
 # CONFIG — adjust these paths for your setup
 # =============================================
-BASE_DIR = "/kaggle/working/SmolEngine"
-PLAY_BINARY = os.path.join(BASE_DIR, "build", "play")
-MODEL_DIR = os.path.join(BASE_DIR, "5x5_othello_models")
+# Assume script is in subfolder (e.g., /scripts)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# Repo root is one level up
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+PLAY_BINARY = os.path.join(REPO_ROOT, "build", "play")
+# Models are now in /models folder
+MODEL_DIR = os.path.join(REPO_ROOT, "models")
+# Results saved to /results folder
+OUTPUT_DIR = os.path.join(REPO_ROOT, "results")
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 GAMES_PER_MATCHUP = 20     # Total games per matchup (half as each color)
-OUTPUT_DIR = "/kaggle/working"  # Where to save plots and results
 
 
 # =============================================
@@ -48,11 +54,11 @@ def run_arena_match(model_a_path, model_b_path, num_games):
         str(num_games),
     ]
     
-    # Set LD_LIBRARY_PATH for libtorch
+    # Set LD_LIBRARY_PATH for libtorch if needed (optional)
     env = os.environ.copy()
-    libtorch_lib = os.path.join(BASE_DIR, "libtorch", "lib")
-    if os.path.exists(libtorch_lib):
-        env["LD_LIBRARY_PATH"] = libtorch_lib + ":" + env.get("LD_LIBRARY_PATH", "")
+    # libtorch_lib = os.path.join(REPO_ROOT, "libtorch", "lib")
+    # if os.path.exists(libtorch_lib):
+    #     env["LD_LIBRARY_PATH"] = libtorch_lib + ":" + env.get("LD_LIBRARY_PATH", "")
     
     try:
         result = subprocess.run(
@@ -157,8 +163,10 @@ def create_plots(sorted_elos, results, iters, output_dir):
     ax1.set_ylabel('Elo Rating')
     ax1.set_title('ProbZero: Elo Rating vs Training Iteration', fontweight='bold')
     ax1.grid(True, alpha=0.25, linestyle='--')
-    ax1.set_xlim(min(plot_iters) - 15, max(plot_iters) + 15)
-    ax1.set_ylim(min(plot_elos) - 50, max(plot_elos) + 80)
+    
+    if len(plot_iters) > 0:
+        ax1.set_xlim(min(plot_iters) - 15, max(plot_iters) + 15)
+        ax1.set_ylim(min(plot_elos) - 50, max(plot_elos) + 80)
     
     for it, elo in sorted_elos:
         ax1.annotate(f'{elo:.0f}', (it, elo), textcoords="offset points",
@@ -171,11 +179,14 @@ def create_plots(sorted_elos, results, iters, output_dir):
     wm = np.full((n, n), 0.5)
     
     for a, b, wa, wb, d in results:
-        i, j = iters.index(a), iters.index(b)
-        total = wa + wb + d
-        if total > 0:
-            wm[i][j] = (wa + 0.5 * d) / total
-            wm[j][i] = (wb + 0.5 * d) / total
+        try:
+            i, j = iters.index(a), iters.index(b)
+            total = wa + wb + d
+            if total > 0:
+                wm[i][j] = (wa + 0.5 * d) / total
+                wm[j][i] = (wb + 0.5 * d) / total
+        except ValueError:
+            continue # Should not happen if iters aligned
     
     im = ax2.imshow(wm, cmap='RdYlGn', vmin=0, vmax=1, aspect='auto')
     ax2.set_xticks(range(n))
@@ -199,7 +210,7 @@ def create_plots(sorted_elos, results, iters, output_dir):
     
     plot_path = os.path.join(output_dir, 'elo_progression.png')
     plt.savefig(plot_path, dpi=200, bbox_inches='tight')
-    plt.show()
+    # plt.show() # Not needed in headless
     print(f"\nPlot saved to {plot_path}")
 
 
@@ -219,7 +230,16 @@ def main():
         return
     
     model_files = sorted([f for f in os.listdir(MODEL_DIR) if f.endswith('.pt')])
-    iters = sorted([int(f.replace('model_iter_', '').replace('.pt', '')) for f in model_files])
+    iters = []
+    for f in model_files:
+        try:
+            # model_iter_XXX.pt
+            it = int(f.replace('model_iter_', '').replace('.pt', ''))
+            iters.append(it)
+        except ValueError:
+            continue
+            
+    iters = sorted(iters)
     
     print(f"ProbZero Elo Estimation")
     print(f"{'='*60}")
@@ -229,6 +249,10 @@ def main():
     print(f"Games/matchup: {GAMES_PER_MATCHUP}")
     print(f"{'='*60}\n")
     
+    if len(iters) < 2:
+        print("Not enough models to run arena (need at least 2).")
+        return
+
     # Build model paths
     model_paths = {it: os.path.join(MODEL_DIR, f"model_iter_{it}.pt") for it in iters}
     
