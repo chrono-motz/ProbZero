@@ -21,7 +21,7 @@ struct Node {
     std::array<int,26> children;
     int num_legal;
     std::vector<int> parents;
-    int visit_count;
+    float visit_count;
 
     Node() {
         // Explicitly fill arrays if {} above isn't supported by compiler, 
@@ -38,6 +38,6 @@ struct Node {
         children.fill(-1);
         explored = false;
         terminal = false;
-        visit_count = 0;
+        visit_count = 0.0f;
     }
 };

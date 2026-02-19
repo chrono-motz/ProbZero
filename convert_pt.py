@@ -14,7 +14,7 @@ def save_traced(model, filename):
         def forward(self, x):
             p, v, r = self.m(x)
             # Apply Softmax here so C++ gets probabilities directly
-            return p, F.softmax(v, dim=1), F.softmax(r, dim=1)
+            return F.softmax(p, dim=1), F.softmax(v, dim=1), F.softmax(r, dim=1)
             
     traced = torch.jit.trace(ExportWrapper(model), example)
     traced.save(filename)

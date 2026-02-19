@@ -29,14 +29,13 @@ BASE_DIR = "/kaggle/working/SmolEngine"
 PLAY_BINARY = os.path.join(BASE_DIR, "build", "play")
 MODEL_DIR = os.path.join(BASE_DIR, "5x5_othello_models")
 GAMES_PER_MATCHUP = 20     # Total games per matchup (half as each color)
-TEMPERATURE = 1.0           # Move selection temperature
 OUTPUT_DIR = "/kaggle/working"  # Where to save plots and results
 
 
 # =============================================
 # ARENA RUNNER (uses C++ binary)
 # =============================================
-def run_arena_match(model_a_path, model_b_path, num_games, temperature):
+def run_arena_match(model_a_path, model_b_path, num_games):
     """
     Run C++ arena: model_a plays Black, model_b plays White.
     Returns (black_wins, white_wins, draws).
@@ -47,7 +46,6 @@ def run_arena_match(model_a_path, model_b_path, num_games, temperature):
         model_a_path,
         model_b_path,
         str(num_games),
-        str(temperature)
     ]
     
     # Set LD_LIBRARY_PATH for libtorch
@@ -77,7 +75,7 @@ def run_arena_match(model_a_path, model_b_path, num_games, temperature):
         return 0, 0, 0
 
 
-def run_full_matchup(model_a_path, model_b_path, num_games, temperature):
+def run_full_matchup(model_a_path, model_b_path, num_games):
     """
     Run a full matchup: half games with A as Black, half with A as White.
     Returns (wins_a, wins_b, draws).
@@ -85,13 +83,13 @@ def run_full_matchup(model_a_path, model_b_path, num_games, temperature):
     half = num_games // 2
     
     # A = Black, B = White
-    bw_b, bw_w, bw_d = run_arena_match(model_a_path, model_b_path, half, temperature)
+    bw_b, bw_w, bw_d = run_arena_match(model_a_path, model_b_path, half)
     wins_a_1 = bw_b      # A was Black, Black wins = A wins
     wins_b_1 = bw_w      # B was White, White wins = B wins
     draws_1 = bw_d
     
     # B = Black, A = White
-    bw_b2, bw_w2, bw_d2 = run_arena_match(model_b_path, model_a_path, num_games - half, temperature)
+    bw_b2, bw_w2, bw_d2 = run_arena_match(model_b_path, model_a_path, num_games - half)
     wins_b_2 = bw_b2     # B was Black, Black wins = B wins
     wins_a_2 = bw_w2     # A was White, White wins = A wins  
     draws_2 = bw_d2
@@ -229,7 +227,6 @@ def main():
     print(f"Models:        {MODEL_DIR}")
     print(f"Found models:  {iters}")
     print(f"Games/matchup: {GAMES_PER_MATCHUP}")
-    print(f"Temperature:   {TEMPERATURE}")
     print(f"{'='*60}\n")
     
     # Build model paths
@@ -244,7 +241,7 @@ def main():
     for idx, (a, b) in enumerate(pairs):
         print(f"[{idx+1}/{len(pairs)}] iter_{a} vs iter_{b}:", end=" ")
         wa, wb, d = run_full_matchup(
-            model_paths[a], model_paths[b], GAMES_PER_MATCHUP, TEMPERATURE
+            model_paths[a], model_paths[b], GAMES_PER_MATCHUP
         )
         results.append((a, b, wa, wb, d))
         print(f"{wa}-{wb}-{d}")
@@ -279,7 +276,7 @@ def main():
     results_path = os.path.join(OUTPUT_DIR, 'elo_results.txt')
     with open(results_path, 'w') as f:
         f.write("ProbZero Elo Estimation Results\n")
-        f.write(f"Games/matchup: {GAMES_PER_MATCHUP}, Temp: {TEMPERATURE}\n\n")
+        f.write(f"Games/matchup: {GAMES_PER_MATCHUP}\n\n")
         f.write("Elo Ratings:\n")
         for it, elo in sorted_elos:
             f.write(f"  iter_{it}: {elo:.1f}\n")

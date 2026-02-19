@@ -25,10 +25,10 @@ void print_board(const Othello& game) {
             bool is_black, is_white;
             if (p == 0) { // Black's view
                 is_black = (buf[idx] == 1.0f);
-                is_white = (buf[25 + idx] == 1.0f);
+                is_white = (buf[64 + idx] == 1.0f);
             } else { // White's view
                 is_white = (buf[idx] == 1.0f);
-                is_black = (buf[25 + idx] == 1.0f);
+                is_black = (buf[64 + idx] == 1.0f);
             }
 
             if (is_black) std::cout << " X";      
@@ -119,20 +119,14 @@ class ParallelArena {
     }
 
 public:
-    ParallelArena(std::string path_b, std::string path_w, int n, int s, float temp) : num_games(n), sims(s) {
+    ParallelArena(std::string path_b, std::string path_w, int n, int s) : num_games(n), sims(s) {
         model_b = std::make_shared<Model>(); model_b->load_model(path_b);
         model_w = std::make_shared<Model>(); model_w->load_model(path_w);
         
         matches.resize(n);
         for(int i=0; i<n; ++i) {
-            matches[i].ai_b = std::make_unique<Mcts>(); 
-            matches[i].ai_b->set_model(model_b);
-            matches[i].ai_b->set_temperature(temp); // Set temperature
-            
-            matches[i].ai_w = std::make_unique<Mcts>(); 
-            matches[i].ai_w->set_model(model_w);
-            matches[i].ai_w->set_temperature(temp); // Set temperature
-
+            matches[i].ai_b = std::make_unique<Mcts>(); matches[i].ai_b->set_model(model_b);
+            matches[i].ai_w = std::make_unique<Mcts>(); matches[i].ai_w->set_model(model_w);
             matches[i].ai_b->initialize(matches[i].game);
             matches[i].ai_w->initialize(matches[i].game);
         }
@@ -147,7 +141,7 @@ public:
             iter++;
             if(iter % 10 == 0) std::cout << "Processed turn " << iter << " | Completed: " << finished_count << "\n";
 
-             // 1. MCTS SEARCH PHASE
+            // 1. MCTS SEARCH PHASE
             int sim_step = 16;
             for(int s=0; s < sims; s += sim_step) { 
                 std::vector<Mcts*> batch_b;
@@ -155,11 +149,9 @@ public:
                 
                 for(auto& m : matches) {
                     if(m.finished) continue;
-                    // Both players run sims from the same position,
-                    // so both trees explore the legal moves and
-                    // advance_root works for both after a move is played
-                    batch_b.push_back(m.ai_b.get());
-                    batch_w.push_back(m.ai_w.get());
+                    int p = m.game.current_player();
+                    if(p == 0) batch_b.push_back(m.ai_b.get());
+                    else       batch_w.push_back(m.ai_w.get());
                 }
                 
                 // Prepare
@@ -179,7 +171,7 @@ public:
                 Mcts* ai = (p==0) ? m.ai_b.get() : m.ai_w.get();
                 Mcts* opp = (p==0) ? m.ai_w.get() : m.ai_b.get();
                 
-                int move = ai->get_move(true); // Deterministic best move
+                int move = ai->get_move(true); // Deterministic
                 // Apply move if valid
                 if(move >= 0) {
                    m.game.apply_action(move);
@@ -188,6 +180,7 @@ public:
                 } else {
                    // Pass?
                    if (!m.game.is_terminal()) {
+                        // Check if pass is legal (it should be if get_move returned -1 but not terminal?)
                         std::array<int, 26> legal; 
                         if (m.game.get_legal_actions(legal) > 0) {
                              m.game.apply_action(legal[0]);
@@ -226,16 +219,14 @@ int main(int argc, char* argv[]) {
     std::string path1 = "model_b.pt";
     std::string path2 = "model_w.pt";
     int num_games = 1;
-    float temperature = 1.0f;
     
     if (argc > 1) mode = std::stoi(argv[1]);
     if (argc > 2) path1 = argv[2];
     if (argc > 3) path2 = argv[3];
     if (argc > 4) num_games = std::stoi(argv[4]);
-    if (argc > 5) temperature = std::stof(argv[5]);
 
     if(mode == 4 && num_games > 1) {
-        ParallelArena arena(path1, path2, num_games, 1600, temperature);
+        ParallelArena arena(path1, path2, num_games, 1600);
         arena.run();
         return 0;
     }
@@ -249,26 +240,22 @@ int main(int argc, char* argv[]) {
     try {
         if (mode == 1) {
             ai_players[1] = new Mcts();
-            ai_players[1]->set_temperature(temperature);
             ai_players[1]->load_model(path1);
             ai_players[1]->initialize(game);
             std::cout << "White AI loaded: " << path1 << "\n";
         } 
         else if (mode == 2 || mode == 3) {
             ai_players[0] = new Mcts();
-            ai_players[0]->set_temperature(temperature);
             ai_players[0]->load_model(path1);
             ai_players[0]->initialize(game);
             std::cout << "Black AI loaded: " << path1 << "\n";
         } 
         else if (mode == 4) {
             ai_players[0] = new Mcts();
-            ai_players[0]->set_temperature(temperature);
             ai_players[0]->load_model(path1);
             ai_players[0]->initialize(game);
             
             ai_players[1] = new Mcts();
-            ai_players[1]->set_temperature(temperature);
             ai_players[1]->load_model(path2);
             ai_players[1]->initialize(game);
             std::cout << "AI vs AI Match Started!\n";
@@ -289,13 +276,6 @@ int main(int argc, char* argv[]) {
         if (ai_players[p] != nullptr) {
             Mcts* current_ai = ai_players[p];
             for(int i=0; i < (ai_sims/16); ++i) current_ai->run_simulation_batch(16);
-            
-            static int _debug_ctr = 0;
-            if (_debug_ctr < 5) { // Print first 5 moves only
-                 current_ai->print_debug_root(10);
-                 _debug_ctr++;
-            }
-            
             move = current_ai->get_move(true); 
             
             if (num_games==1 && move >= 0) {

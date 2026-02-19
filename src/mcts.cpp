@@ -495,7 +495,7 @@ void Mcts::process_batch(const std::vector<int>& leaves) {
                 
                 node.value_net = value_net; 
                 node.value_search = value_net;
-                node.value_target = reward_net; // Bootstrap value target from reward head
+                node.value_target = value_net; // Initialize target too!
                 node.reward_net = reward_net;
             }
         } 

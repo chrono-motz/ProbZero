@@ -71,7 +71,7 @@ private:
             }
             
             float w = node.visit_count;
-            if (w < 1e-6f) continue; // Skip unvisited nodes
+            if (w < 1e-6f) w = 1.0f;
             
             // for(int m=0; m<26; ++m) entry.policy_accum[m] += node.policy_search[m] * w;
             for(int m=0; m<26; ++m) {
