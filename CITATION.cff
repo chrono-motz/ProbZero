@@ -7,6 +7,7 @@ authors:
     given-names: "Mothish"
     orcid: "https://orcid.org/0009-0007-5891-4840"
 date-released: "2026-02-19"
+doi: 10.5281/zenodo.18701250
 url: "https://github.com/chrono-motz/ProbZero"
 repository-code: "https://github.com/chrono-motz/ProbZero"
 license: Apache-2.0

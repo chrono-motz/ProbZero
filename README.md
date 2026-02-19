@@ -1,5 +1,7 @@
 # ProbZero
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18701250.svg)](https://doi.org/10.5281/zenodo.18701250)
+
 **Reward-Bootstrapped AlphaZero with Full-Tree Policy Training**
 
 A novel AlphaZero variant that introduces two key modifications to the standard algorithm, demonstrated on 5×5 Othello (Mini-Othello).
@@ -221,6 +223,7 @@ If you use this work, please cite:
 
 ```bibtex
 @software{probzero2026,
+  doi={10.5281/zenodo.18701250},
   title={ProbZero: Reward-Bootstrapped AlphaZero with Full-Tree Policy Training},
   author={Mothish},
   year={2026},
