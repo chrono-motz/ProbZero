@@ -6,6 +6,14 @@
 
 A novel AlphaZero variant that introduces two key modifications to the standard algorithm, demonstrated on 5×5 Othello (Mini-Othello).
 
+
+> ⚠️ **Current Status (Ongoing Research)**  
+> Initial experiments showed early Elo progression followed by instability and collapse.  
+> The primary cause is the absence of a replay buffer: while full-tree supervision provides significantly more training targets per self-play game, it does not sufficiently decorrelate updates across iterations.  
+>  
+> The original hypothesis was that dense full-tree learning would provide enough diversity and signal to stabilize training without replay. Empirical results indicate that experience reuse and decorrelation remain essential, even under tree-wide supervision. Replay-based stabilization is currently being implemented.
+
+
 ## Key Innovations
 
 ### 1. Reward-Bootstrapped Value Head
