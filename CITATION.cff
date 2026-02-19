@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "ProbZero: Reward-Bootstrapped AlphaZero with Full-Tree Policy Training"
+title: "ProbZero: Reward-Bootstrapped AlphaZero with Particle-Based MCTS"
 type: software
 authors:
   - family-names: "M"
     given-names: "Mothish"
     orcid: "https://orcid.org/0009-0007-5891-4840"
-date-released: "2025-02-19"
+date-released: "2026-02-19"
 url: "https://github.com/chrono-motz/ProbZero"
 repository-code: "https://github.com/chrono-motz/ProbZero"
 license: Apache-2.0
@@ -17,11 +17,14 @@ keywords:
   - mcts
   - self-play
   - reward-bootstrapping
+  - particle-mcts
 abstract: >-
-  ProbZero is an AlphaZero variant that introduces two key modifications:
-  (1) a reward-bootstrapped value head where terminal state rewards propagate
-  through the search tree to train the value function, enabling all explored
-  positions to serve as training data; and (2) a full-tree policy training
-  scheme where the policy network learns from WDL (Win/Draw/Loss) probabilities
-  over explored children only, weighted by visit counts. Demonstrated on 5×5
-  Othello with progressive Elo improvement across training iterations.
+  ProbZero is an AlphaZero variant that introduces reward bootstrapping
+  within the MCTS tree structure and full-tree policy training. A dedicated
+  reward head predicts terminal game outcomes, and these predictions are
+  propagated to non-terminal nodes as value targets through winner
+  probability weighting. The policy network learns from WDL probabilities
+  over explored children at every node in the tree, weighted by visit
+  counts. A particle-based MCTS enables batched GPU inference for
+  efficient tree expansion. Demonstrated on 5x5 Othello with progressive
+  Elo improvement across training iterations.

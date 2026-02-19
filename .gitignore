@@ -13,6 +13,10 @@ merged_dataset.bin
 weights.pth
 model_script.pt
 
+# Checkpoints (large)
+checkpoints/
+*.zip
+
 # IDE
 .vscode/
 
@@ -20,6 +24,6 @@ model_script.pt
 .DS_Store
 Thumbs.db
 
-# Temp
+# Temp scripts
 diagnose.py
 verify_models.py

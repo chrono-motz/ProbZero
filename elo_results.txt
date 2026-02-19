@@ -1,0 +1,42 @@
+ProbZero Elo Estimation Results
+Games/matchup: 20, Temp: 1.0
+
+Elo Ratings:
+  iter_50: 0.0
+  iter_100: 309.0
+  iter_150: 242.0
+  iter_200: 319.3
+  iter_250: 397.0
+  iter_300: 206.7
+  iter_350: 184.5
+  iter_400: 358.7
+
+Match Results:
+  iter_50 vs iter_100: 1-19-0
+  iter_50 vs iter_150: 6-14-0
+  iter_50 vs iter_200: 2-18-0
+  iter_50 vs iter_250: 2-18-0
+  iter_50 vs iter_300: 6-14-0
+  iter_50 vs iter_350: 5-14-1
+  iter_50 vs iter_400: 1-19-0
+  iter_100 vs iter_150: 11-8-1
+  iter_100 vs iter_200: 9-11-0
+  iter_100 vs iter_250: 7-13-0
+  iter_100 vs iter_300: 13-3-4
+  iter_100 vs iter_350: 12-7-1
+  iter_100 vs iter_400: 7-12-1
+  iter_150 vs iter_200: 8-12-0
+  iter_150 vs iter_250: 3-17-0
+  iter_150 vs iter_300: 11-7-2
+  iter_150 vs iter_350: 13-7-0
+  iter_150 vs iter_400: 8-12-0
+  iter_200 vs iter_250: 8-12-0
+  iter_200 vs iter_300: 12-7-1
+  iter_200 vs iter_350: 13-7-0
+  iter_200 vs iter_400: 9-11-0
+  iter_250 vs iter_300: 15-5-0
+  iter_250 vs iter_350: 14-6-0
+  iter_250 vs iter_400: 10-10-0
+  iter_300 vs iter_350: 10-7-3
+  iter_300 vs iter_400: 8-12-0
+  iter_350 vs iter_400: 5-15-0
