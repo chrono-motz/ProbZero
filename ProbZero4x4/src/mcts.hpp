@@ -36,7 +36,7 @@ private:
     void forward_update(int node_idx);
     void mark_traversal_path(int node_idx);
     void mark_terminal_path(int node_idx);
-    void winner_prob(int num_children, const std::array<int, 26>& children, std::array<float, 26>& weights, float temp_scale);
+    void winner_prob(int num_children, const std::array<int, 17>& children, std::array<float, 17>& weights, float temp_scale);
 public:
     Mcts();
     ~Mcts();

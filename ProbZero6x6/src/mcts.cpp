@@ -39,7 +39,7 @@ int Mcts::get_move(bool deterministic) {
     const Node& root = nodes[root_idx];
     
     // Sanity check on num_legal
-    if (root.num_legal < 0 || root.num_legal > 26) {
+    if (root.num_legal < 0 || root.num_legal > 37) {
         std::cerr << "ERROR: Invalid num_legal " << root.num_legal << " at root_idx " << root_idx << "\n";
         return -1;
     }
@@ -53,7 +53,7 @@ int Mcts::get_move(bool deterministic) {
         for (int i = 0; i < root.num_legal; ++i) {
             int m = root.legal[i];
             // Bounds check on the move
-            if (m < 0 || m >= 26) {
+            if (m < 0 || m >= 37) {
                 std::cerr << "ERROR: Invalid move " << m << " at index " << i << "\n";
                 continue;
             }
@@ -81,7 +81,7 @@ int Mcts::get_move(bool deterministic) {
         for (int i = 0; i < root.num_legal; ++i) {
             int m = root.legal[i];
             // Bounds check on the move
-            if (m < 0 || m >= 26) {
+            if (m < 0 || m >= 37) {
                 std::cerr << "ERROR: Invalid move " << m << " at index " << i << "\n";
                 continue;
             }
@@ -174,7 +174,7 @@ void Mcts::extract_leaf_states(float* buffer){
     for (int i = 0; i < batch_size; ++i) {
         int leaf_idx = leaves[i];
          if (leaf_idx < 0 || leaf_idx >= static_cast<int>(nodes.size())) continue;
-        nodes[leaf_idx].state.encode_state(buffer + (i * 50));
+        nodes[leaf_idx].state.encode_state(buffer + (i * 72));
     }
 }
 
@@ -226,17 +226,17 @@ void Mcts::update_leaves_from_tensor(const float* p_data_base, const float* v_da
              
              for(int m=0; m < node.num_legal; ++m) {
                 int move = node.legal[m];
-                float logit = p_data_base[i*26 + move];
+                float logit = p_data_base[i*37 + move];
                 if (std::isnan(logit)) logit = -1e9f;
                 if (logit > max_logit) max_logit = logit;
              }
              
              float sum_p = 0.0f;
-             std::array<float, 26> exp_p;
+             std::array<float, 37> exp_p;
              
              for(int m=0; m < node.num_legal; ++m) {
                 int move = node.legal[m];
-                float logit = p_data_base[i*26 + move];
+                float logit = p_data_base[i*37 + move];
                 if (std::isnan(logit)) logit = -1e9f;
                 exp_p[m] = std::exp(logit - max_logit); 
                 sum_p += exp_p[m];
@@ -301,7 +301,7 @@ void Mcts::final_update(int node_idx) {
     }
 
     // 3. Pack Active Children (Matching forward_update logic)
-    std::array<int, 26> active_children;
+    std::array<int, 37> active_children;
     int n_active = 0;
 
     for (int i = 0; i < node.num_legal; ++i) {
@@ -316,7 +316,7 @@ void Mcts::final_update(int node_idx) {
     if (n_active == 0) return;
 
     // 4. Calculate Weights
-    std::array<float, 26> weights;
+    std::array<float, 37> weights;
     winner_prob(n_active, active_children, weights, param_temperature);
     
     node.reward_target = {0.0f, 0.0f, 0.0f};
@@ -341,10 +341,10 @@ void Mcts::final_update(int node_idx) {
         node.reward_target[2] *= inv;
     }
 }
-void Mcts::winner_prob(int num_children, const std::array<int, 26>& children, std::array<float, 26>& weights, float temp_scale) {
+void Mcts::winner_prob(int num_children, const std::array<int, 37>& children, std::array<float, 37>& weights, float temp_scale) {
     weights.fill(0.0f);
     if (num_children == 0) return;
-    std::array<float, 26> p0, p1, p2, lt1, lt2;
+    std::array<float, 37> p0, p1, p2, lt1, lt2;
     for (int i = 0; i < num_children; ++i) {
         int c_idx = children[i];
         if (c_idx < 0 || c_idx >= static_cast<int>(nodes.size())) {
@@ -372,7 +372,7 @@ void Mcts::winner_prob(int num_children, const std::array<int, 26>& children, st
     }
 
     float sum_win = 0.0f;
-    std::array<float, 26> raw_win;
+    std::array<float, 37> raw_win;
 
     for (int i = 0; i < num_children; ++i) {
         float term1 = p1[i] * static_cast<float>(prod_lt1 / lt1[i]);
@@ -454,10 +454,10 @@ void Mcts::process_batch(const std::vector<int>& leaves) {
         }
     }
     
-    std::vector<float> input_buffer(batch_size * 50);
+    std::vector<float> input_buffer(batch_size * 72);
     for (int i = 0; i < batch_size; ++i) {
         int leaf_idx = leaves[i];
-        nodes[leaf_idx].state.encode_state(&input_buffer[i * 50]);
+        nodes[leaf_idx].state.encode_state(&input_buffer[i * 72]);
     }
 
     auto [p_tens, v_tens, r_tens] = model->inference(input_buffer, batch_size);
@@ -521,7 +521,7 @@ void Mcts::process_batch(const std::vector<int>& leaves) {
         }
 
         float sum_p = 0.0f;
-        std::array<float, 26> exp_p;
+        std::array<float, 37> exp_p;
         
         for(int m=0; m < node.num_legal; ++m) {
             float logit = p_acc[i][node.legal[m]];
@@ -630,7 +630,7 @@ void Mcts::forward_recursive(int node_idx, int volume, std::vector<int>& leaves_
     node->visit_count += volume;
     
     // Sanity check on num_legal
-    if (node->num_legal < 0 || node->num_legal > 26) {
+    if (node->num_legal < 0 || node->num_legal > 37) {
         std::cerr << "ERROR: Node " << node_idx << " has invalid num_legal=" << node->num_legal << "\n";
         return;
     }
@@ -753,8 +753,8 @@ void Mcts::forward_update(int node_idx) {
 
     if (node.terminal) return;
 
-    std::array<int, 26> active_child_idx;
-    std::array<int, 26> active_move_idx;
+    std::array<int, 37> active_child_idx;
+    std::array<int, 37> active_move_idx;
     int n_active = 0;
     float explored_p = 0.0f;
 
@@ -777,7 +777,7 @@ void Mcts::forward_update(int node_idx) {
 
     if (n_active == 0) return;
 
-    std::array<float, 26> scaled_probs;
+    std::array<float, 37> scaled_probs;
     winner_prob(n_active, active_child_idx, scaled_probs, param_temperature);
 
     for (int i = 0; i < n_active; ++i) {
@@ -820,9 +820,9 @@ void Mcts::print_debug_root(int limit_moves) {
     const Node& root = nodes[root_idx];
     
     auto fmt = [](int m) -> std::string {
-        if (m == 64) return "PASS";
-        char col = 'A' + (m % 5);
-        char row = '1' + (m / 5);
+        if (m == 36) return "PASS";  // Was 16
+        char col = 'A' + (m % 6);    // Was 4
+        char row = '1' + (m / 6);    // Was 4
         return std::string(1, col) + std::string(1, row);
     };
 
@@ -837,8 +837,8 @@ void Mcts::print_debug_root(int limit_moves) {
     std::cout << "...\n";
 
     // Reconstruct Search Probs (Need children)
-    std::array<int, 26> active_child_idx;
-    std::array<int, 26> active_move_idx;
+    std::array<int, 37> active_child_idx;
+    std::array<int, 37> active_move_idx;
     int n_active = 0;
     float explored_p = 0.0f;
 
@@ -859,7 +859,7 @@ void Mcts::print_debug_root(int limit_moves) {
     }
 
     // 2. Unscaled Search Probs (Temp = 1.0)
-    std::array<float, 26> unscaled_weights;
+    std::array<float, 37> unscaled_weights;
     winner_prob(n_active, active_child_idx, unscaled_weights, 1.0f);
     
     std::cout << ">>> 2. Search Probs (Temp=1.0): ";
@@ -871,7 +871,7 @@ void Mcts::print_debug_root(int limit_moves) {
     std::cout << "...\n";
 
     // 3. Scaled Search Probs (Temp = param_temperature)
-    std::array<float, 26> scaled_weights;
+    std::array<float, 37> scaled_weights;
     winner_prob(n_active, active_child_idx, scaled_weights, param_temperature);
 
     std::cout << ">>> 3. Search Probs (Temp=" << param_temperature << "): ";

@@ -97,7 +97,7 @@ private:
     }
 
 public:
-    Selfplay(const std::string& model_path, int num_games = 1) {
+    Selfplay(const std::string& model_path, int num_games = 1, int cycle = 0) {
         model = std::make_shared<Model>();
         model->load_model(model_path);
         
@@ -105,6 +105,7 @@ public:
         for(int i=0; i<num_games; ++i) {
             games[i] = std::make_unique<Mcts>();
             games[i]->set_model(model);
+            games[i]->iteration = cycle;
             Othello g; 
             games[i]->initialize(g);
         }

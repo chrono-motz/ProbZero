@@ -51,7 +51,7 @@ REPO_ROOT = os.path.dirname(current_dir)
 ENGINE_PATH = os.path.join(REPO_ROOT, "build", "c4_engine")
 
 START_ITER = 0
-SAVE_EVERY = 50
+SAVE_EVERY = 10
 MAX_ITERATIONS = 1800
 
 MODEL_LATEST = os.path.join(REPO_ROOT, "model_latest.pt")
@@ -65,13 +65,18 @@ SLEEP_SECONDS = 1
 # ============================================
 
 
-def run_selfplay(model_path, dataset_path):
+def run_selfplay(model_path, dataset_path, cycle):
     """Run C++ self-play engine."""
     if not os.path.exists(ENGINE_PATH):
         raise FileNotFoundError(f"Engine not found at {ENGINE_PATH}. Please run 'mkdir -p build && cd build && cmake .. && make -j' first.")
         
     cmd = [ENGINE_PATH, model_path, dataset_path]
-    subprocess.run(cmd, check=True)
+    
+    # Pass iteration number to C++ via environment variable to preserve positional defaults
+    env = os.environ.copy()
+    env["ITERATION"] = str(cycle)
+    
+    subprocess.run(cmd, env=env, check=True)
 
 
 def load_traced_weights_into_model(model, traced_path):
@@ -117,6 +122,12 @@ def main():
 
     # Save initial model for engine
     save_traced(model, MODEL_LATEST)
+    
+    # Save iter 0
+    weights_path_0 = os.path.join(CHECKPOINT_DIR, f"weights_iter_0.pth")
+    model_path_0 = os.path.join(CHECKPOINT_DIR, f"model_iter_0.pt")
+    torch.save(model.state_dict(), weights_path_0)
+    save_traced(model, model_path_0)
 
     cycle = START_ITER
 
@@ -131,7 +142,7 @@ def main():
             os.remove(DATASET_PATH)
 
         try:
-            run_selfplay(MODEL_LATEST, DATASET_PATH)
+            run_selfplay(MODEL_LATEST, DATASET_PATH, cycle)
         except subprocess.CalledProcessError:
             print("❌ Engine crashed — skipping cycle")
             continue

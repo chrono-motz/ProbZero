@@ -67,6 +67,7 @@ int main(int argc, char* argv[]) {
     int batch_size = 8;  // Particles per batch (Flow Volume)
     int num_batches = 60; // Total expansion steps (Tree Size ~= batch_size * num_batches)
     int num_games = 20;   // Number of parallel games
+    int cycle = 0;
 
     // Optional: Parse args
     if (argc > 1) model_path = argv[1];
@@ -74,15 +75,19 @@ int main(int argc, char* argv[]) {
     if (argc > 3) num_batches = std::stoi(argv[3]);
     if (argc > 4) num_games = std::stoi(argv[4]);
 
+    const char* env_iter = std::getenv("ITERATION");
+    if (env_iter) cycle = std::stoi(env_iter);
+
     std::cout << "=== Connect4 AlphaZero Tree Harvester ===\n";
     std::cout << "Model: " << model_path << "\n";
     std::cout << "Target Batches: " << num_batches << "\n";
     std::cout << "Particles/Batch: " << batch_size << "\n";
+    std::cout << "Cycle: " << cycle << "\n";
     std::cout << "Parallel Games: " << num_games << "\n";
     
     try {
         // 1. Initialize Engine
-        Selfplay engine(model_path, num_games);
+        Selfplay engine(model_path, num_games, cycle);
 
         // 2. Run Generation
         auto start_time = std::chrono::high_resolution_clock::now();
