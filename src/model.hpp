@@ -2,15 +2,14 @@
 
 #include <torch/script.h> 
 #include <vector>
+#include <string>
 
-class OptimizedMCTS;
-
-class Model{
+class Model {
 private:
     mutable torch::jit::script::Module module;
     torch::Device device; 
 
-    public:
+public:
     Model() : device(torch::kCUDA) {}
     
     void load_model(const std::string& path) {
@@ -18,11 +17,10 @@ private:
         module.eval();
     }
 
-    // Returns tuple: [Policy, Value, Reward] tensors on CPU
     std::tuple<torch::Tensor, torch::Tensor, torch::Tensor> 
-    inference(const std::vector<float>& input_data, int batch_size) {
+    inference(const std::vector<float>& input_data, int batch_size, int board_size) {
         auto options = torch::TensorOptions().dtype(torch::kFloat32);
-        torch::Tensor input = torch::from_blob((void*)input_data.data(), {batch_size, 2, 5, 5}, options).to(device);
+        torch::Tensor input = torch::from_blob((void*)input_data.data(), {batch_size, 2, board_size, board_size}, options).to(device);
         
         torch::NoGradGuard no_grad;
         auto outputs = module.forward({input}).toTuple();
@@ -33,5 +31,4 @@ private:
             outputs->elements()[2].toTensor().to(torch::kCPU)
         };
     }
-
 };

@@ -1,30 +1,30 @@
 #pragma once
 
 #include <cstdint>
-#include <array>
 #include <vector>
 #include <unordered_map>
 #include <memory>
-// #include <mutex>
-// #include <atomic>
+#include <string>
 
-std::string format_move(int m); // Forward declaration
+std::string format_move(int m, int board_size); // Forward declaration
 
-struct Node ;   
-class Model ;   
-class Othello ;
+struct Node;
+class Model;
+class Othello;
 
 class Mcts {
 private:
     std::shared_ptr<Model> model;
     std::shared_ptr<Model> model_opp;
-    std::vector<int> traversal_set ;
-    std::vector<int> terminal_set ;
-    std::vector<int> leaves ;
-    std::unordered_map<uint64_t , int> node_map ;
-    int terminal_epoch ;
-    int traversal_epoch ;
-    // std::mutex mutex;
+    std::vector<int> traversal_set;
+    std::vector<int> terminal_set;
+    std::vector<int> leaves;
+    std::unordered_map<uint64_t, int> node_map;
+    int terminal_epoch;
+    int traversal_epoch;
+    int board_size;
+    int num_actions;
+    int board_dim;
     
 public:
     int iteration = 0;
@@ -36,15 +36,14 @@ private:
     void forward_update(int node_idx);
     void mark_traversal_path(int node_idx);
     void mark_terminal_path(int node_idx);
-    void winner_prob(int num_children, const std::array<int, 26>& children, std::array<float, 26>& weights, float temp_scale);
+    void winner_prob(int num_children, const std::vector<int>& children, std::vector<float>& weights, float temp_scale);
 public:
-    Mcts();
+    Mcts(int size);
     ~Mcts();
     void print_debug_root(int limit_moves = 5);
-    std::vector<Node> nodes ;
-    int root_idx ;
-    // std::atomic<int> node_count_idx ;
-    int node_count_idx ;
+    std::vector<Node> nodes;
+    int root_idx;
+    int node_count_idx;
     float param_temperature = 1.0f;
     bool is_game_over();
     void set_temperature(float temp) { param_temperature = temp; }
@@ -53,7 +52,7 @@ public:
     void set_model(std::shared_ptr<Model> m) { model = m; }
     void initialize(const Othello& game);
     int get_move(bool deterministic);
-    void advance_root(int move_idx) ;
+    void advance_root(int move_idx);
     void run_simulation_batch(int volume);
     
     // External batching support
@@ -64,4 +63,5 @@ public:
     void run_simulation_finalize();
 
     void final_update(int node_idx);
+    int get_board_size() const { return board_size; }
 };
